@@ -1,9 +1,16 @@
-﻿<div>SPAN:</div>
-<div id="ectxt"></div>
-<br />
-<div>Key</div>
-<div id="key"></div>
-</body>
+﻿<div class="row">
+    <div class="col-lg-12">
+        <div class="input-group">
+            <span class="input-group-addon" id="basic-addon1">歌单ID</span>
+            <input type="text" class="form-control" placeholder="歌单ID" id="msid" aria-describedby="basic-addon1">
+        </div>
+    </div>
+    <div class="col-lg-12">
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-default" id="download">开始下载</button>
+        </div>
+    </div>
+</div>
 <script src="http://apps.bdimg.com/libs/crypto-js/3.1.2/components/core.js"></script>
 <script src="http://apps.bdimg.com/libs/crypto-js/3.1.2/rollups/aes.js"></script>
 <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
@@ -281,12 +288,37 @@
                 var key = getKey(re.data[te]);
                 res.push({ name: te, prams: encodeURI(key.encText), encSecKey: key.encSecKey });
             }
-
-            $.post("/Home/GetMusicSrc", { parms: res }, function (data) { 
-                
+            var nowIndex = 0;
+            var maxIndex = res.length;
+            var newRe = [];
+            while (true) {
+                if ((nowIndex+1) * 200 < maxIndex) {
+                    newRe.push(res.slice(nowIndex * 200, (nowIndex + 1) * 200 - 1));
+                    nowIndex++;
+                } else {
+                    newRe.push(res.slice(nowIndex * 200))
+                    break;
+                }
+            }
+            newRe.forEach(function (v) { 
+                $.post("/Home/GetMusicSrc", { parms: v, title: re.title });
             });
+            
         });
     }
 
-    getPlayerList("746872");
+    $(function () {
+        $("#download").on("click", function () {
+            if ($("#msid").val() != '') {
+                $("#msid").val().split(',').forEach(function (v) { 
+                    if (v != '') {
+                        getPlayerList(v);
+                    }
+
+                });            
+            }
+        });
+
+    });
+    
 </script>
